@@ -22,6 +22,7 @@ type WireguardInterface interface {
 	AddClient(publickey string, ipRange string) (err error)
 	ClientExists(publickey string) (status bool, err error)
 	ListClients() (publicKeys []string, err error)
+	RemoveClient(publickey string) (err error)
 }
 
 type Wireguard struct {
@@ -31,16 +32,20 @@ type Wireguard struct {
 }
 
 func (w Wireguard) GeneratePrivateKey() (err error) {
+	log.Println("Generate Private Key")
 	cmd := w.Shell.Command("wg", "genkey")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Println("Failed generate Priivatekey")
 		return
 	}
 	err = ioutil.WriteFile(w.Path+"/privatekey", out, 0600)
 	if err != nil {
+		log.Println("Failed write Private Key to HDD")
 		return
 	}
 
+	log.Println("Private Key generated")
 	return
 }
 
@@ -78,12 +83,15 @@ func (w Wireguard) GeneratePublicKey() (err error) {
 }
 
 func (w Wireguard) PrivateKeyExists() (status bool, err error) {
+	log.Println("Check if Private Key exists")
 	status = false
 	if _, err = os.Stat(w.Path + "/privatekey"); os.IsNotExist(err) {
 		status = false
+		log.Println("Private Key not exists")
 		return
 	}
 	status = true
+	log.Println("Private Key exists")
 	return
 }
 
@@ -141,10 +149,10 @@ func (w Wireguard) ListClients() (publicKeys []string, err error) {
 	out, err := cmd.CombinedOutput()
 	lines := strings.Split(string(out),"\n")
 	for _, v := range lines {
-		matched, _ := regexp.MatchString(`public key: `, v)
+		matched, _ := regexp.MatchString(`peer: `, v)
 		if matched {
 			charSlice := []rune(v)
-			publicKey := string(charSlice[14:])
+			publicKey := string(charSlice[6:])
 			publicKeys = append(publicKeys, publicKey)
 
 		}
@@ -153,6 +161,7 @@ func (w Wireguard) ListClients() (publicKeys []string, err error) {
 }
 
 func (w Wireguard) ClientExists(publickey string) (status bool, err error) {
+	log.Println("Check if client "+publickey+" exists")
 	status = false
 	publickeys, err := w.ListClients()
 	if err != nil {
@@ -161,8 +170,18 @@ func (w Wireguard) ClientExists(publickey string) (status bool, err error) {
 	for _, b := range publickeys {
 		if b == publickey {
 			status = true
+			log.Println("Client found")
 			return
 		}
 	}
+	log.Println("Client not found")
+	return
+}
+
+func (w Wireguard) RemoveClient(publickey string) (err error) {
+	deviceName := w.Device.GetName()
+	cmd := w.Shell.Command("wg", "set", deviceName, "peer", publickey, "remove")
+	_, err = cmd.CombinedOutput()
+
 	return
 }

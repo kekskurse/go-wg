@@ -95,7 +95,7 @@ func (d Device) IPRangeExists(iprange string) (status bool, err error) {
 
 	lines := strings.Split(string(out),"\n")
 	for _, v := range lines {
-		matched, _ := regexp.MatchString(`inet ` + iprange + ` scope global go-wg`, v)
+		matched, _ := regexp.MatchString(`inet ` + iprange + ` scope global `+d.Name, v)
 		if matched {
 			status = true
 			log.Println("IP Range found")
