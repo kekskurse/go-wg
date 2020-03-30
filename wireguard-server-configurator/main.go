@@ -44,7 +44,9 @@ func setupWireguard() {
 
 	port, err := wireguard.GetListenPort()
 	if err != nil {
-		panic(err)
+		if err.Error() != "No Listen Port found" {
+			panic(err)
+		}
 	}
 	if port == 0 {
 		wireguard.SetListenPort(51820)
