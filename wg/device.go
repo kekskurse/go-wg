@@ -73,7 +73,7 @@ func (d Device) CheckExists() (status bool, err error) {
 }
 
 func (d Device) AddIPRange(iprange string) (err error) {
-	log.Println("Try to add IP Range to device")
+	log.Println("Try to add IP Range >"+iprange+"< to device")
 	cmd := d.Shell.Command("ip", "addr", "add", iprange, "dev", d.Name)
 	out, err := cmd.CombinedOutput()
 

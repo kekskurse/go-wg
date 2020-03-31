@@ -2,6 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"wg"
@@ -21,8 +24,8 @@ func setupWireguard() {
 		}
 	}
 
-	if l, _ := device.IPRangeExists("10.42.133.0/24"); l == false {
-		err := device.AddIPRange("10.42.133.0/24")
+	if l, _ := device.IPRangeExists(c.IPRange); l == false {
+		err := device.AddIPRange(c.IPRange)
 		if err != nil {
 			panic(err)
 		}
@@ -30,7 +33,7 @@ func setupWireguard() {
 
 	wireguard = wg.Wireguard{}
 	wireguard.Device = device
-	wireguard.Path = "/etc/go-wg"
+	wireguard.Path = c.ServerCertificatePath
 	wireguard.Shell = shell
 	wireguard.SetupFolder()
 
@@ -49,7 +52,7 @@ func setupWireguard() {
 		}
 	}
 	if port == 0 {
-		wireguard.SetListenPort(51820)
+		wireguard.SetListenPort(c.ListenPort)
 	}
 }
 
@@ -60,9 +63,37 @@ type dbClient struct {
 	internIpv4 string
 }
 
+type config struct {
+	DBConnectionString string `yaml:"DBConnectionString"`
+	ListenPort int `yaml:"listenPort"`
+	IPRange string `yaml:"ipRange"`
+	ServerCertificatePath string `yaml:"serverCertificatePath"`
+}
+
+var c config
+
+func readConfig(configFile string) {
+	log.Println("Config file: ", configFile)
+	yamlFile, err := ioutil.ReadFile(configFile)
+
+	log.Println(string(yamlFile))
+	log.Println(c)
+
+	if err != nil {
+		panic(err)
+	}
+	err = yaml.Unmarshal(yamlFile, &c)
+
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println(c)
+}
+
 //Get clients with status approved from the DB and add them to wireguard if they not exists
 func addClientsFromDB()  {
-	db, err := sql.Open("mysql", "root:example@tcp(127.0.0.1:4306)/wg")
+	db, err := sql.Open("mysql", c.DBConnectionString)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -98,7 +129,7 @@ func addClientsFromDB()  {
 
 // Check if clients are connected to the wireguard which are not with status approved in DB
 func checkWireguardClientsAgainsDB() {
-	db, err := sql.Open("mysql", "root:example@tcp(127.0.0.1:4306)/wg")
+	db, err := sql.Open("mysql", c.DBConnectionString)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -148,6 +179,10 @@ func checkWireguardClientsAgainsDB() {
 func main() {
 	log.Println("Start")
 	log.Println("Basic Wireguard Settings")
+	configFile := flag.String("config", "/etc/go-wg/server.yaml", "Path to a config yaml file")
+
+	flag.Parse()
+	readConfig(*configFile)
 	setupWireguard()
 	log.Println("Get Clients from DB")
 	addClientsFromDB()
@@ -155,39 +190,4 @@ func main() {
 	checkWireguardClientsAgainsDB()
 	log.Println("Done")
 
-}
-
-
-
-func setupSampleServer() {
-	shell := wg.WGShell{} //Just wrapper for exec.Command
-	device := wg.Device{}
-	device.Name = "wg-test"
-	device.Shell = shell
-	if l, _ := device.CheckExists(); l == true {
-		device.Remove()
-	}
-	device.Add()
-
-	if l, _ := device.IPRangeExists("10.42.133.0/24"); l {
-		device.AddIPRange("10.42.133.0/24")
-	}
-
-	wireguard := wg.Wireguard{}
-	wireguard.Device = device
-	wireguard.Path = "/tmp/wg"
-	wireguard.Shell = shell
-	wireguard.SetupFolder()
-
-	if l, _ := wireguard.PrivateKeyExists(); l == false {
-		wireguard.GeneratePrivateKey()
-	}
-
-	if l, _ := wireguard.PublicKeyExists(); l == false {
-		wireguard.GeneratePublicKey()
-	}
-
-
-	wireguard.SetListenPort(51820)
-	wireguard.AddClient("+a5d1tw7YQC//FEmhAPsb1PKgWw18GIVFW2Bixm2nio=", "10.42.133.23/32")
 }
