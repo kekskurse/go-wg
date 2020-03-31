@@ -1,3 +1,9 @@
+# GO-WG
+
+Some Software configure a Wireguard "Server" that Clients can easy connect to it. 
+The Clients connect to the Server via a HTTP-API, send a Public Key and ask for access. 
+If the Administrator approve the Access (via a WebGUI) the client get a IP-Address which it can use to connect to the Wireguard Server.
+
 ![Plan](statik/Plan.png "Plan")
 
 * wg -> Package to config Device and Wireguard
