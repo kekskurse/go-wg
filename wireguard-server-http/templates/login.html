@@ -1,0 +1,30 @@
+{{define "base"}}
+    <html>
+    <body>
+    <form method="post">
+        <label>Username</label><br>
+        <input type="text" name="username"><br>
+        <label>Password</label><br>
+        <input type="password" name="password"><br>
+        <input style="margin-top:10px;" type="submit" value="Login">
+    </form>
+    </body>
+    </html>
+
+{{end}}
+
+{{define "base_fail"}}
+    <html>
+    <body>
+    <form method="post">
+        <p>Login Failed</p>
+        <label>Username</label><br>
+        <input type="text" name="username"><br>
+        <label>Password</label><br>
+        <input type="password" name="password"><br>
+        <input style="margin-top:10px;" type="submit" value="Login">
+    </form>
+    </body>
+    </html>
+
+{{end}}

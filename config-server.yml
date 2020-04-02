@@ -2,3 +2,6 @@ DBConnectionString: "root:example@tcp(127.0.0.1:4306)/wg"
 listenPort: 51820
 ipRange: "10.42.133.0/24"
 serverCertificatePath: "/etc/go-wg/server"
+# @todo Add the user to db
+user: "admin"
+password: "admin"
