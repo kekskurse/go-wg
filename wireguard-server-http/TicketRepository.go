@@ -9,7 +9,7 @@ import (
 
 type TicketRepositoryInterface interface {
 	List() (tickets []Ticket)
-	GetByTicketID(ticketid string) (ticket Ticket)
+	GetByTicketID(ticketID string) (ticket Ticket)
 	CreateTicket (ticket Ticket) (retTicket Ticket, err error)
 }
 
@@ -96,8 +96,8 @@ func (t TicketRepository) CreateTicket (ticket Ticket) (retTicket Ticket, err er
 	return
 }
 
-func (t TicketRepository) GetByTicketID(ticketid string) (ticket Ticket) {
-	results, err := t.DB.Query("SELECT id, ticketID, status, publicKey, publicIP, hostname, internIpv4  FROM tickets WHERE ticketID = ?", ticketid)
+func (t TicketRepository) GetByTicketID(ticketID string) (ticket Ticket) {
+	results, err := t.DB.Query("SELECT id, ticketID, status, publicKey, publicIP, hostname, internIpv4  FROM tickets WHERE ticketID = ?", ticketID)
 	if err != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
@@ -121,6 +121,11 @@ func (t TicketRepository) SaveTicket(ticket Ticket) {
 	}
 }
 
+func (t TicketRepository) ChangeStatus(ticketID string, status string) () {
+	ticket := t.GetByTicketID(ticketID)
+	ticket.Status = status
+	t.SaveTicket(ticket)
+}
 func (t TicketRepository) ActivateTicket(ticketID string) () {
 	ticket := t.GetByTicketID(ticketID)
 	if ticket.ID == 0 {

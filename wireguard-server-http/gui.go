@@ -17,6 +17,9 @@ func (g gui) createRoute(r chi.Router) {
 	r.Post("/login", g.performLogin)
 	r.Get("/ticket", g.tickets)
 	r.Get("/ticket/approve", g.approveTicket)
+	r.Get("/ticket/deny", g.denyTicket)
+	r.Get("/ticket/reject", g.rejectTicket)
+	r.Get("/ticket/reapprove", g.reApproveTicket)
 }
 
 func (g gui) approveTicket(w http.ResponseWriter, r *http.Request) {
@@ -27,6 +30,34 @@ func (g gui) approveTicket(w http.ResponseWriter, r *http.Request) {
 	g.TicketRepository.ActivateTicket(IDs[0])
 	http.Redirect(w, r, "/gui/ticket", 302)
 }
+
+func (g gui) denyTicket(w http.ResponseWriter, r *http.Request) {
+	IDs, ok := r.URL.Query()["id"]
+	if ok == false {
+		panic("No ID given")
+	}
+	g.TicketRepository.ChangeStatus(IDs[0], "denied")
+	http.Redirect(w, r, "/gui/ticket", 302)
+}
+
+func (g gui) rejectTicket(w http.ResponseWriter, r *http.Request) {
+	IDs, ok := r.URL.Query()["id"]
+	if ok == false {
+		panic("No ID given")
+	}
+	g.TicketRepository.ChangeStatus(IDs[0], "rejected")
+	http.Redirect(w, r, "/gui/ticket", 302)
+}
+
+func (g gui) reApproveTicket(w http.ResponseWriter, r *http.Request) {
+	IDs, ok := r.URL.Query()["id"]
+	if ok == false {
+		panic("No ID given")
+	}
+	g.TicketRepository.ChangeStatus(IDs[0], "approved")
+	http.Redirect(w, r, "/gui/ticket", 302)
+}
+
 
 func (g gui) login(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.New("").ParseFiles("templates/login.html")
