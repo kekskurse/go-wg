@@ -1,0 +1,40 @@
+{{define "content"}}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-sm table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">TicketID</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Public Key</th>
+                    <th scope="col">Internal IP</th>
+                    <th scope="col">Hostname</th>
+                    <th scope="col">Public IP*</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .Tickets}}
+                    <tr>
+                        <th scope="row">{{ .ID }}</th>
+                        <td>{{ .TicketID }}</td>
+                        <td>{{ .Status }}</td>
+                        <td>{{ .PublicKey }}</td>
+                        <td>{{ .InternIpv4 }}</td>
+                        <td>{{ .Hostname }}</td>
+                        <td>{{ .PublicIP }}</td>
+                        <td>
+                            <a href="/gui/ticket/approve?id={{ .TicketID }}">Activate</a>
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+            * IP the Ticket is created with
+        </div>
+    </div>
+
+
+
+{{end}}

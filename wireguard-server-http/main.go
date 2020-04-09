@@ -39,9 +39,6 @@ func readConfig(configFile string) {
 	log.Println("Config file: ", configFile)
 	yamlFile, err := ioutil.ReadFile(configFile)
 
-	log.Println(string(yamlFile))
-	log.Println(c)
-
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +48,6 @@ func readConfig(configFile string) {
 		panic(err)
 	}
 
-	log.Println(c)
 }
 
 func setupRouter() chi.Router {
@@ -59,8 +55,11 @@ func setupRouter() chi.Router {
 
 	db := setubDB()
 
+
 	ticketRepository := TicketRepository{}
 	ticketRepository.DB = db
+	ticketRepository.IPHandler = newIPHandler(c)
+	ticketRepository.Setup()
 
 	a := api{}
 	a.TicketRepository = ticketRepository
@@ -75,6 +74,7 @@ func setupRouter() chi.Router {
 	router.Get("/", func (w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/gui/login", 301)
 	})
+
 
 	return router
 }

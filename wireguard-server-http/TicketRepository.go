@@ -51,6 +51,11 @@ func GetServer () (s []Server) {
 
 type TicketRepository struct{
 	DB *sql.DB
+	IPHandler *IPHandler
+}
+
+func (t TicketRepository) Setup() {
+	t.IPHandler.Setup(t)
 }
 
 func (t TicketRepository) List () (tickets []Ticket) {
@@ -107,6 +112,27 @@ func (t TicketRepository) GetByTicketID(ticketid string) (ticket Ticket) {
 	}
 
 	return
+}
+func (t TicketRepository) SaveTicket(ticket Ticket) {
+	log.Println("Save Ticket", ticket.ID)
+	_, err := t.DB.Exec(`UPDATE tickets SET status = ?, internIpv4 = ? WHERE id = ?;`, ticket.Status, ticket.InternIpv4, ticket.ID)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (t TicketRepository) ActivateTicket(ticketID string) () {
+	ticket := t.GetByTicketID(ticketID)
+	if ticket.ID == 0 {
+		panic("Ticket not found")
+	}
+	if ticket.Status == "approved" {
+		log.Println("Nothing to do")
+		return
+	}
+	ticket.InternIpv4 = t.IPHandler.GetRandomFreeIP()
+	ticket.Status = "approved"
+	t.SaveTicket(ticket)
 }
 
 func (t Ticket) PublicTicket () (ticket PublicTicket) {
