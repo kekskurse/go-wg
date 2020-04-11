@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -52,6 +53,8 @@ func readConfig(configFile string) {
 
 func setupRouter() chi.Router {
 	router := chi.NewRouter()
+
+	router.Use(middleware.Logger)
 
 	db := setubDB()
 

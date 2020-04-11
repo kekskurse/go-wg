@@ -23,12 +23,30 @@ type WireguardInterface interface {
 	ClientExists(publickey string) (status bool, err error)
 	ListClients() (publicKeys []string, err error)
 	RemoveClient(publickey string) (err error)
+	ConnectToRemotePeer(peerPublicKey string, allowedIPs string, endpoint string) (err error)
+	AddPrivateKey() (err error)
 }
 
 type Wireguard struct {
 	Path string
 	Device DeviceInterface
 	Shell WGShellInterface
+}
+
+func (w Wireguard) ConnectToRemotePeer(peerPublicKey string, allowedIPs string, endpoint string) (err error) {
+	//wg set wg0 peer fAoJ02w4ravlkLbcaiIl8bbQ6svlAZXJ3mUO3XR4u0g= allowed-ips 192.168.222.2/32 endpoint 188.xxx.xx.xx:36448 persistent-keepalive 25
+	cmd := w.Shell.Command("wg", "set", w.Device.GetName(), "peer", peerPublicKey, "allowed-ips", allowedIPs, "endpoint", endpoint, "persistent-keepalive", "25")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Println(string(out))
+	}
+	return
+}
+
+func (w Wireguard) AddPrivateKey() (err error) {
+	cmd := w.Shell.Command("wg", "set", w.Device.GetName(), "private-key", w.Path+"/privatekey")
+	_, err = cmd.CombinedOutput()
+	return
 }
 
 func (w Wireguard) GeneratePrivateKey() (err error) {
@@ -79,6 +97,13 @@ func (w Wireguard) GeneratePublicKey() (err error) {
 		return
 	}
 
+	return
+}
+
+func (w Wireguard) GetPublicKey() (key string, err error) {
+	dat, err := ioutil.ReadFile(w.Path + "/publickey")
+	key = string(dat)
+	key = strings.TrimSpace(key)
 	return
 }
 

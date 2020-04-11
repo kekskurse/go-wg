@@ -39,12 +39,12 @@ func (a api) getPublicTicket(w http.ResponseWriter, r *http.Request) {
 	keys, _ := r.URL.Query()["publicKey"]
 
 	if len(keys) != 1 {
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(400)+": Public Key is missing", 400)
 		return
 	}
 
 	if ticket.PublicKey != keys[0] {
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(400)+": Public Key dont match", 400)
 		return
 	}
 
@@ -66,12 +66,12 @@ func (a api) createTicket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ticketRequest.PublicKey == "" {
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(400) + ": Empty Public Key", 400)
 		return
 	}
 
 	if ticketRequest.Hostname == "" {
-		http.Error(w, http.StatusText(400), 400)
+		http.Error(w, http.StatusText(400) + ": Empty Hostname", 400)
 		return
 	}
 

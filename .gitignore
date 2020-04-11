@@ -1,2 +1,5 @@
 .idea/
 wireguard-server-configurator/wireguard-server-configurator
+tmp/
+wireguard-client/wg-client-arm
+wireguard-client/wireguard-client

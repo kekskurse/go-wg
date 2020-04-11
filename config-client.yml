@@ -1,0 +1,2 @@
+serverURL: "http://localhost:3333/"
+clientCertificatePath: "/etc/go-wg/client"

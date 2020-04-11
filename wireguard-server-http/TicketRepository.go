@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	_ "github.com/go-sql-driver/mysql"
+	"strconv"
 )
 
 
@@ -36,15 +37,18 @@ type TicketRequest struct {
 
 type Server struct {
 	Hostname string `json:"hostname"`
-	AllowdIP string `json:"allowdIP"`
+	AllowedIP string `json:"allowedIP"`
 	PublicKey string `json:"publicKey"`
+	InternalServerIP string `json:"internalServerIP"`
 }
 
+// @todo replace with config
 func GetServer () (s []Server) {
 	server := Server{}
-	server.Hostname = "vpn.n6e.de"
-	server.AllowdIP = "10.42.0.0/16"
-	server.PublicKey = "abc"
+	server.Hostname = "192.168.1.181:"+ strconv.Itoa(c.ListenPort)
+	server.AllowedIP = c.IPRange
+	server.PublicKey = "ESJ/SW/+qKNowOPI/JFd2DqC/UyOpCyly5SC9J19Ph0="
+	server.InternalServerIP = "10.42.133.1"
 	s = append(s, server)
 	return
 }

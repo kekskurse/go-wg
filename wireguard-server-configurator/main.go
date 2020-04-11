@@ -12,11 +12,18 @@ import (
 
 var wireguard wg.Wireguard
 
-func setupWireguard() {
+func setupWireguard(delete bool) {
 	shell := wg.WGShell{} //Just wrapper for exec.Command
 	device := wg.Device{}
 	device.Name = "wg-test"
 	device.Shell = shell
+
+	if delete {
+		if l, _ := device.CheckExists(); l == true {
+			device.Remove()
+		}
+	}
+
 	if l, _ := device.CheckExists(); l == false {
 		err := device.Add()
 		if err != nil {
@@ -54,6 +61,8 @@ func setupWireguard() {
 	if port == 0 {
 		wireguard.SetListenPort(c.ListenPort)
 	}
+	wireguard.AddPrivateKey()
+	wireguard.Device.Up()
 }
 
 type dbClient struct {
@@ -180,10 +189,19 @@ func main() {
 	log.Println("Start")
 	log.Println("Basic Wireguard Settings")
 	configFile := flag.String("config", "/etc/go-wg/server.yaml", "Path to a config yaml file")
-
+	delete := flag.String("delete", "no", "if yes it will reset all")
 	flag.Parse()
+
+	del := false
+	if *delete == "yes" {
+		del = true
+	}
+
+	log.Println(*delete)
+	log.Println("Delete Device before create", del)
+
 	readConfig(*configFile)
-	setupWireguard()
+	setupWireguard(del)
 	log.Println("Get Clients from DB")
 	addClientsFromDB()
 	log.Println("Remove Clients not exists in DB")

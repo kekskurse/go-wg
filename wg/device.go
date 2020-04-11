@@ -14,11 +14,21 @@ type DeviceInterface interface {
 	AddIPRange(iprange string) (err error)
 	IPRangeExists(iprange string) (status bool, err error)
 	GetName() (name string)
+	Up () (err error)
 }
 
 type Device struct {
 	Name string
 	Shell WGShellInterface
+}
+
+func (d Device) Up() (err error) {
+	cmd := d.Shell.Command("ip", "link", "set", d.Name, "up")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Println(out)
+	}
+	return
 }
 
 func (d Device) Remove() (err error) {
